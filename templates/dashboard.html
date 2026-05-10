@@ -1,0 +1,118 @@
+<link rel="stylesheet" href="/static/style.css">
+
+<div class="dashboard-wrapper">
+
+    <div class="top-bar-fixed">
+
+        <button onclick="toggleMode()" class="toggle-btn">🌙</button>
+
+        <!-- PROFILE -->
+        <div class="profile-box" onclick="toggleProfile()">
+            {{ session['user'][0] | upper }}
+            <div class="profile-dropdown" id="profileDropdown">
+                <p><b>{{ session['user'] }}</b></p>
+                <p>{{ session.get('email', 'No Email') }}</p>
+                <hr>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+
+    </div>
+
+<div class="main-layout">
+
+    <div class="left-panel">
+
+        <h1>Resume Analyzer</h1>
+
+        <form method="POST" action="/analyze" enctype="multipart/form-data">
+
+            <label>Job Description <span style="color:red">*</span></label>
+            <textarea name="job_desc" rows="10" placeholder="Paste Job Description" required></textarea>
+
+            <label>Upload Resume <span style="color:red">*</span></label>
+
+            <div class="file-row">
+                <input type="file" name="resume" required>
+                <button type="submit">Analyze</button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="right-panel">
+
+        <h2>History</h2>
+
+        {% if history|length == 0 %}
+            <p>No analysis history yet.</p>
+        {% endif %}
+
+        {% for item in history %}
+        <div class="history-card">
+
+            <p><b>{{ item[2] }}</b></p>
+
+            <p>Score: {{ (item[3] * 10) | round(2) }}%</p>
+
+            <small>{{ item[4] }}</small>
+
+            {% if item[1] %}
+            <details>
+                <summary>View Job Description</summary>
+                <p class="jd-text">{{ item[1] }}</p>
+            </details>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+</div>
+
+<script>
+function toggleMode() {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", document.body.classList.contains("dark"));
+}
+
+window.onload = () => {
+    if (localStorage.getItem("theme") === "true") {
+        document.body.classList.add("dark");
+    }
+}
+
+document.querySelector("form").addEventListener("submit", function(e) {
+    let jd = document.querySelector("[name='job_desc']").value.trim();
+    let file = document.querySelector("[name='resume']").files.length;
+
+    if (!jd || file === 0) {
+        alert("Both Job Description and Resume are required!");
+        e.preventDefault();
+    }
+});
+
+function toggleProfile() {
+    let dropdown = document.getElementById("profileDropdown");
+    dropdown.classList.toggle("show");
+}
+
+/* Close when clicking outside */
+window.onclick = function(e) {
+    if (!e.target.closest('.profile-box')) {
+        document.getElementById("profileDropdown").classList.remove("show");
+    }
+}
+
+document.addEventListener("click", function(event) {
+    let dropdown = document.getElementById("profileDropdown");
+    let profile = document.querySelector(".profile-circle");
+
+    if (!profile.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.remove("show");
+    }
+});
+</script>
