@@ -1,0 +1,117 @@
+{% if error %}
+<script>
+    showToast("{{ error }}", "error");
+</script>
+{% endif %}
+
+{% if success %}
+<script>
+    showToast("{{ success }}", "success");
+</script>
+{% endif %}
+
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="top-bar-fixed">
+        <button onclick="toggleMode()" class="toggle-btn">🌙</button>
+    </div>
+
+    <div id="toast-container"></div>
+    <div class="auth-container">
+    <h2>Register</h2>
+
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    {% if success %}
+    <p style="color: green;">{{ success }}</p>
+    {% endif %}
+
+    <form method="POST" action="/register" nonvalidate onsubmit="return validateEmail()">    
+        <input type="text" name="username" value="{{ username or '' }}" placeholder="Enter Username" required>
+        <input type="email" name="email" value="{{ email or '' }}" placeholder="Enter Email" required>
+        <input type="password" name="password" placeholder="Enter Password" required>
+        <input type="password" name="confirm_password" placeholder="Enter Confirm Password" required>
+        <button type="submit">Register</button>
+    </form>
+
+    <a href="/login" class="login-link">Login</a>
+</div>
+
+<script>
+function validateForm() {
+    let p = document.querySelector("[name='password']").value;
+    let c = document.querySelector("[name='confirm_password']").value;
+
+    if (p !== c) {
+        alert("Passwords do not match");
+        return false;
+    }
+    return true;
+}
+
+function showToast(message, type="success") {
+    let container = document.getElementById("toast-container");
+
+    let toast = document.createElement("div");
+    toast.className = "toast " + type;
+    toast.innerText = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => toast.classList.add("show"), 100);
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+</body>
+</html>
+
+<script>
+function toggleMode() {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", document.body.classList.contains("dark"));
+}
+
+window.onload = () => {
+    if (localStorage.getItem("theme") === "true") {
+        document.body.classList.add("dark");
+    }
+}
+
+function validateEmail() {
+    let email = document.querySelector("[name='email']").value.trim();
+
+    if (!email.endsWith("@gmail.com")) {
+        showError("Invalid email, please enter a valid email");
+        return false;
+    }
+
+    return true;
+}
+
+function showError(msg) {
+    let errorBox = document.getElementById("email-error");
+
+    if (!errorBox) {
+        errorBox = document.createElement("div");
+        errorBox.id = "email-error";
+        errorBox.style.color = "red";
+        errorBox.style.marginTop = "8px";
+
+        document.querySelector("[name='email']").after(errorBox);
+    }
+
+    errorBox.innerText = msg;
+}
+</script>
